@@ -36,7 +36,9 @@ class PostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), Response::HTTP_BAD_REQUEST);
+            return response()->json([
+                'errors' => $validator->errors()
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $post = Post::create($request->all());
@@ -60,7 +62,9 @@ class PostController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors(), Response::HTTP_BAD_REQUEST);
+            return response()->json([
+                'errors' => $validator->errors()
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $post->update($request->all());
