@@ -2,8 +2,10 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
@@ -32,20 +34,43 @@ class Handler extends ExceptionHandler
                 'errors' => $e->errors(),
             ], JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
         });
+    }
 
-        $this->renderable(function (NotFoundHttpException $e) {
+    /**
+     * Render an exception into an HTTP response.
+     *
+     * @param  Request  $request
+     * @param  Throwable  $e
+     * @return \Symfony\Component\HttpFoundation\Response
+     *
+     * @throws \Throwable
+     */
+    public function render($request, Throwable $e)
+    {
+        if ($e instanceof ModelNotFoundException || 
+            ($e instanceof NotFoundHttpException && $e->getPrevious() instanceof ModelNotFoundException)) {
             return new JsonResponse([
                 'message' => 'Resource not found.',
             ], JsonResponse::HTTP_NOT_FOUND);
-        });
+        }
 
-        $this->renderable(function (Throwable $e) {
-            if (request()->expectsJson()) {
+        if ($request->expectsJson()) {
+            if (config('app.debug') && !app()->environment('testing')) {
                 return new JsonResponse([
                     'message' => 'An error occurred while processing your request.',
-                    'error' => $e->getMessage()
+                    'error' => $e->getMessage(),
+                    'exception' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTrace()
                 ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
             }
-        });
+            
+            return new JsonResponse([
+                'message' => 'An error occurred while processing your request.',
+            ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return parent::render($request, $e);
     }
 }

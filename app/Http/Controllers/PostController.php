@@ -108,8 +108,12 @@ class PostController extends Controller
      *     )
      * )
      */
-    public function show(Post $post)
+    public function show($id)
     {
+        $post = Post::find($id);
+        if (!$post) {
+            return response()->json(['message' => 'Resource not found.'], Response::HTTP_NOT_FOUND);
+        }
         return response()->json($post);
     }
 
@@ -149,8 +153,12 @@ class PostController extends Controller
      *     )
      * )
      */
-    public function update(PostRequest $request, Post $post)
+    public function update(PostRequest $request, $id)
     {
+        $post = Post::find($id);
+        if (!$post) {
+            return response()->json(['message' => 'Resource not found.'], Response::HTTP_NOT_FOUND);
+        }
         $post->update($request->validated());
         return response()->json($post);
     }
@@ -178,8 +186,12 @@ class PostController extends Controller
      *     )
      * )
      */
-    public function destroy(Post $post)
+    public function destroy($id)
     {
+        $post = Post::find($id);
+        if (!$post) {
+            return response()->json(['message' => 'Resource not found.'], Response::HTTP_NOT_FOUND);
+        }
         $post->delete();
         return response()->json(null, Response::HTTP_NO_CONTENT);
     }

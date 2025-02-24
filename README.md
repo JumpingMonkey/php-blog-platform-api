@@ -9,6 +9,10 @@ A RESTful API for managing blog posts built with Laravel. This API provides endp
 - Swagger/OpenAPI documentation
 - Docker containerization
 - Comprehensive test suite
+- API versioning
+- Rate limiting
+- Pagination
+- CORS support
 
 ## Requirements
 
@@ -40,18 +44,105 @@ docker exec laravel-app php artisan migrate
 
 ## API Documentation
 
-The API documentation is available via Swagger UI at:
+Interactive API documentation is available via Swagger UI at:
 ```
 http://localhost:8000/api/documentation
 ```
 
-### Available Endpoints
+### API Endpoints
 
-- `POST /api/posts` - Create a new blog post
-- `GET /api/posts` - Get all blog posts (with optional search)
-- `GET /api/posts/{id}` - Get a specific blog post
-- `PUT /api/posts/{id}` - Update a blog post
-- `DELETE /api/posts/{id}` - Delete a blog post
+All endpoints are prefixed with `/api/v1`
+
+#### Posts
+
+- **GET** `/posts`
+  - Get all posts with pagination (10 per page)
+  - Query Parameters:
+    - `term` (optional): Search term to filter posts
+    - `page` (optional): Page number for pagination
+  - Response: 200 OK
+  ```json
+  {
+    "data": [
+      {
+        "id": 1,
+        "title": "Post Title",
+        "content": "Post content",
+        "category": "Category",
+        "tags": ["tag1", "tag2"],
+        "created_at": "2024-02-23T12:00:00Z",
+        "updated_at": "2024-02-23T12:00:00Z"
+      }
+    ],
+    "links": {
+      "first": "http://localhost:8000/api/v1/posts?page=1",
+      "last": "http://localhost:8000/api/v1/posts?page=1",
+      "prev": null,
+      "next": null
+    },
+    "meta": {
+      "current_page": 1,
+      "total": 1
+    }
+  }
+  ```
+
+- **POST** `/posts`
+  - Create a new post
+  - Request Body:
+  ```json
+  {
+    "title": "Post Title",
+    "content": "Post content",
+    "category": "Category",
+    "tags": ["tag1", "tag2"]
+  }
+  ```
+  - Response: 201 Created
+
+- **GET** `/posts/{id}`
+  - Get a specific post
+  - Response: 200 OK
+
+- **PUT** `/posts/{id}`
+  - Update a post
+  - Request Body: Same as POST
+  - Response: 200 OK
+
+- **DELETE** `/posts/{id}`
+  - Delete a post
+  - Response: 204 No Content
+
+### Error Responses
+
+- **404 Not Found**
+  ```json
+  {
+    "message": "Resource not found."
+  }
+  ```
+
+- **422 Unprocessable Entity**
+  ```json
+  {
+    "message": "The given data was invalid.",
+    "errors": {
+      "title": ["The title field is required."],
+      "content": ["The content field is required."]
+    }
+  }
+  ```
+
+- **429 Too Many Requests**
+  ```json
+  {
+    "message": "Too Many Attempts."
+  }
+  ```
+
+### Rate Limiting
+
+The API is rate-limited to 60 requests per minute per IP address.
 
 ## Testing
 
@@ -59,6 +150,13 @@ Run the test suite:
 ```bash
 docker exec laravel-app php artisan test
 ```
+
+The test suite includes:
+- CRUD operation tests
+- Validation tests
+- Search functionality tests
+- Pagination tests
+- Rate limiting tests
 
 ## Database Configuration
 
@@ -68,6 +166,13 @@ The application uses MySQL with the following default configuration:
 - Password: `secret`
 
 These can be modified in the `.env` file.
+
+## Security
+
+- CORS is configured in `config/cors.php`
+- Input validation using dedicated request classes
+- Rate limiting to prevent API abuse
+- Standardized error responses
 
 ## License
 
