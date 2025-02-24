@@ -23,4 +23,6 @@ Route::get("/test", function () {
     return "test";
 });
 
-Route::apiResource('posts', PostController::class);
+Route::prefix('v1')->middleware(['throttle:60,1'])->group(function () {
+    Route::apiResource('posts', PostController::class);
+});
