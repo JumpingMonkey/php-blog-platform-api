@@ -2,6 +2,8 @@
 
 A RESTful API for managing blog posts built with Laravel. This API provides endpoints for creating, reading, updating, and deleting blog posts, along with search functionality.
 
+This project is based on the [Blogging Platform API](https://roadmap.sh/projects/blogging-platform-api) project from roadmap.sh.
+
 ## Features
 
 - CRUD operations for blog posts
